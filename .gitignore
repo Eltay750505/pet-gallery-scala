@@ -5,6 +5,7 @@
 
 # build tool specific entries
 .bloop
+.bsp/
 target
 metals.sbt
 project/project
