@@ -1,30 +1,21 @@
 package com.petgallery
 
-import cats.effect.{ExitCode, IO, IOApp}
-import com.comcast.ip4s.{Host, Port, port}
-import org.http4s.ember.server.EmberServerBuilder
-import org.http4s.server.Router
-import sttp.tapir.server.http4s.Http4sServerInterpreter
+import cats.effect.{IO, IOApp}
+import com.petgallery.domain.*
 
-object Main extends IOApp:
+import java.time.Instant
+import java.util.UUID
 
-  override def run(args: List[String]): IO[ExitCode] =
-    val routes = Http4sServerInterpreter[IO]().toRoutes(Endpoints.all)
-    val port = sys.env
-      .get("HTTP_PORT")
-      .flatMap(_.toIntOption)
-      .flatMap(Port.fromInt)
-      .getOrElse(port"8080")
+object Main extends IOApp.Simple:
 
-    EmberServerBuilder
-      .default[IO]
-      .withHost(Host.fromString("localhost").get)
-      .withPort(port)
-      .withHttpApp(Router("/" -> routes).orNotFound)
-      .build
-      .use: server =>
-        for
-          _ <- IO.println(s"Go to http://localhost:${server.address.getPort}/docs to open SwaggerUI. Press ENTER key to exit.")
-          _ <- IO.readLine
-        yield ()
-      .as(ExitCode.Success)
+  override def run: IO[Unit] =
+    val owner = User(UserId(UUID.randomUUID()), "alice", "alice@example.com", None, Instant.now())
+    val viewer = UserId(UUID.randomUUID())
+    val photo = Photo(PhotoId(UUID.randomUUID()), owner.id, Some("My cat"), "cat.jpg", Visibility.FollowersOnly, Instant.now())
+
+    for
+      _ <- IO.println(owner)
+      _ <- IO.println(photo)
+      _ <- IO.println(s"Owner can view: ${canView(photo, owner.id, viewerFollowsOwner = false)}")
+      _ <- IO.println(s"Stranger can view: ${canView(photo, viewer, viewerFollowsOwner = false)}")
+    yield ()
