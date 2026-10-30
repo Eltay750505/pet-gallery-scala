@@ -13,6 +13,8 @@ class ModelSpec extends AnyFlatSpec with Matchers:
   private val stranger = UserId(UUID.randomUUID())
   private val follower = UserId(UUID.randomUUID())
 
+  private val follows = List(Follow(follower, owner, Instant.now()))
+
   "canView" should "allow the owner to view any photo" in {
     val photo = buildPhoto(Private)
 
@@ -41,6 +43,26 @@ class ModelSpec extends AnyFlatSpec with Matchers:
     val photo = buildPhoto(Private)
 
     canView(photo, follower, viewerFollowsOwner = true) shouldBe false
+  }
+
+  "isFollowing" should "return true when the follower follows the followee" in {
+    isFollowing(follows, follower, owner) shouldBe true
+  }
+
+  it should "return false for an empty list" in {
+    isFollowing(List.empty, follower, owner) shouldBe false
+  }
+
+  it should "return false when the follow goes the other way" in {
+    isFollowing(follows, owner, follower) shouldBe false
+  }
+
+  it should "return false when the follower follows someone else" in {
+    isFollowing(follows, follower, stranger) shouldBe false
+  }
+
+  it should "return false when someone else follows the followee" in {
+    isFollowing(follows, stranger, owner) shouldBe false
   }
 
   "Ids" should "be equal when they wrap the same UUID" in {

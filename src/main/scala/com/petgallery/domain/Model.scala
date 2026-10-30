@@ -67,3 +67,7 @@ def canView(photo: Photo, viewer: UserId, viewerFollowsOwner: Boolean): Boolean 
       case Visibility.Public        => true
       case Visibility.FollowersOnly => viewerFollowsOwner
       case Visibility.Private       => false
+
+def isFollowing(follows: List[Follow], follower: UserId, followee: UserId): Boolean =
+  follows
+    .exists(follow => follow.followee == followee && follow.follower == follower)
