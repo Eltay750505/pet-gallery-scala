@@ -69,5 +69,12 @@ def canView(photo: Photo, viewer: UserId, viewerFollowsOwner: Boolean): Boolean 
       case Visibility.Private       => false
 
 def isFollowing(follows: List[Follow], follower: UserId, followee: UserId): Boolean =
-  follows
-    .exists(follow => follow.followee == followee && follow.follower == follower)
+  follows.exists(follow => follow.follower == follower && follow.followee == followee)
+
+def feed(viewer: UserId, photos: List[Photo], follows: List[Follow]): List[Photo] = {
+  photos.filter { photo =>
+    val follows_ = isFollowing(follows, viewer, photo.owner)
+    val isOwn = photo.owner == viewer
+    (isOwn || follows_) && canView(photo, viewer, follows_)
+  }
+}

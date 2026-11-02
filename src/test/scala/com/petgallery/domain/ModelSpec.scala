@@ -65,6 +65,25 @@ class ModelSpec extends AnyFlatSpec with Matchers:
     isFollowing(follows, stranger, owner) shouldBe false
   }
 
+  "feed" should "include the viewer's own private photo" in {
+    val photo = buildPhoto(Private)
+
+    feed(owner, List(photo), follows) shouldBe List(photo)
+  }
+
+  it should "include a followers-only photo of someone the viewer follows" in {
+    val photo = buildPhoto(FollowersOnly)
+
+    feed(follower, List(photo), follows) shouldBe List(photo)
+  }
+
+  it should "not include a public photo of someone the viewer does not follow" in {
+    val photo = buildPhoto(Public)
+
+    feed(stranger, List(photo), follows) shouldBe List()
+  }
+
+
   "Ids" should "be equal when they wrap the same UUID" in {
     val uuid = UUID.randomUUID()
 
@@ -72,18 +91,17 @@ class ModelSpec extends AnyFlatSpec with Matchers:
     val secondUser = UserId(uuid)
     val thirdUser = UserId(UUID.randomUUID())
 
-    firstUser == secondUser shouldBe true
-    firstUser == thirdUser shouldBe false
-    secondUser == thirdUser shouldBe false
+    firstUser shouldBe secondUser
+    firstUser should not be thirdUser
   }
 
   "Photo.copy" should "change only the given field" in {
     val photo = buildPhoto(Private)
-    val newPhoto = photo.copy(visibility = Visibility.Public)
+    val newPhoto = photo.copy(visibility = Public)
 
-    photo == newPhoto shouldBe false
-    newPhoto.visibility == Public shouldBe true
-    newPhoto.copy(visibility = Private) == photo shouldBe true
+    newPhoto should not be photo
+    newPhoto.visibility shouldBe Public
+    newPhoto.copy(visibility = Private) shouldBe photo
   }
 
   private def buildPhoto(visibility: Visibility): Photo =
