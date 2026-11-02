@@ -71,10 +71,14 @@ def canView(photo: Photo, viewer: UserId, viewerFollowsOwner: Boolean): Boolean 
 def isFollowing(follows: List[Follow], follower: UserId, followee: UserId): Boolean =
   follows.exists(follow => follow.follower == follower && follow.followee == followee)
 
-def feed(viewer: UserId, photos: List[Photo], follows: List[Follow]): List[Photo] = {
+def feed(viewer: UserId, photos: List[Photo], follows: List[Follow]): List[Photo] =
   photos.filter { photo =>
     val follows_ = isFollowing(follows, viewer, photo.owner)
     val isOwn = photo.owner == viewer
     (isOwn || follows_) && canView(photo, viewer, follows_)
   }.sortBy(photo => photo.createdAt).reverse
-}
+
+def follow(follows: List[Follow], follower: UserId, followee: UserId, at: Instant): Either[DomainError, Follow] =
+  if followee == follower then Left(DomainError.CannotFollowYourself)
+  else if isFollowing(follows, follower, followee) then Left(DomainError.AlreadyFollowing)
+  else Right(Follow(follower, followee, at))

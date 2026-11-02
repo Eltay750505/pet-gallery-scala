@@ -9,11 +9,13 @@ import java.util.UUID
 
 class ModelSpec extends AnyFlatSpec with Matchers:
 
+  private val at = Instant.now()
+
   private val owner = UserId(UUID.randomUUID())
   private val stranger = UserId(UUID.randomUUID())
   private val follower = UserId(UUID.randomUUID())
 
-  private val follows = List(Follow(follower, owner, Instant.now()))
+  private val follows = List(Follow(follower, owner, at))
 
   "canView" should "allow the owner to view any photo" in {
     val photo = buildPhoto(Private)
@@ -89,6 +91,19 @@ class ModelSpec extends AnyFlatSpec with Matchers:
     val newest = buildPhoto(Public, Instant.parse("2026-11-01T12:00:00Z"))
 
     feed(follower, List(middle, oldest, newest), follows) shouldBe List(newest, middle, oldest)
+  }
+
+  "follow" should "not allow following yourself" in {
+    follow(follows, follower, follower, at) shouldBe Left(DomainError.CannotFollowYourself)
+  }
+
+  it should "not allow following someone twice" in {
+    follow(follows, follower, owner, at) shouldBe Left(DomainError.AlreadyFollowing)
+  }
+
+  it should "create a follow for a new followee" in {
+
+    follow(follows, stranger, owner, at) shouldBe Right(Follow(stranger, owner, at))
   }
 
   "Ids" should "be equal when they wrap the same UUID" in {
