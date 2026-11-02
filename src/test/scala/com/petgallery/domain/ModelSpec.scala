@@ -83,6 +83,13 @@ class ModelSpec extends AnyFlatSpec with Matchers:
     feed(stranger, List(photo), follows) shouldBe List()
   }
 
+  it should "show newer photos first" in {
+    val oldest = buildPhoto(Public, Instant.parse("2026-11-01T10:00:00Z"))
+    val middle = buildPhoto(Public, Instant.parse("2026-11-01T11:00:00Z"))
+    val newest = buildPhoto(Public, Instant.parse("2026-11-01T12:00:00Z"))
+
+    feed(follower, List(middle, oldest, newest), follows) shouldBe List(newest, middle, oldest)
+  }
 
   "Ids" should "be equal when they wrap the same UUID" in {
     val uuid = UUID.randomUUID()
@@ -104,5 +111,5 @@ class ModelSpec extends AnyFlatSpec with Matchers:
     newPhoto.copy(visibility = Private) shouldBe photo
   }
 
-  private def buildPhoto(visibility: Visibility): Photo =
-    Photo(PhotoId(UUID.randomUUID()), owner, Some("My cat"), "cat.jpg", visibility, Instant.now())
+  private def buildPhoto(visibility: Visibility, createdAt: Instant = Instant.now()): Photo =
+    Photo(PhotoId(UUID.randomUUID()), owner, Some("My cat"), "cat.jpg", visibility, createdAt)

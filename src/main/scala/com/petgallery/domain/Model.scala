@@ -76,5 +76,5 @@ def feed(viewer: UserId, photos: List[Photo], follows: List[Follow]): List[Photo
     val follows_ = isFollowing(follows, viewer, photo.owner)
     val isOwn = photo.owner == viewer
     (isOwn || follows_) && canView(photo, viewer, follows_)
-  }
+  }.sortBy(photo => photo.createdAt).reverse
 }
