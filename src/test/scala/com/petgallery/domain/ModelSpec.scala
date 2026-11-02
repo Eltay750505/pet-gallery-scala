@@ -106,6 +106,18 @@ class ModelSpec extends AnyFlatSpec with Matchers:
     follow(follows, stranger, owner, at) shouldBe Right(Follow(stranger, owner, at))
   }
 
+  "unfollow" should "remove the follow" in {
+    unfollow(follows, follower, owner) shouldBe empty
+  }
+
+  it should "keep the list unchanged when the follower does not follow the followee" in {
+    unfollow(follows, stranger, owner) shouldBe follows
+  }
+
+  it should "not remove a follow going the other way" in {
+    unfollow(follows, owner, follower) shouldBe follows
+  }
+
   "Ids" should "be equal when they wrap the same UUID" in {
     val uuid = UUID.randomUUID()
 

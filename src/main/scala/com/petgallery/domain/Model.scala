@@ -82,3 +82,6 @@ def follow(follows: List[Follow], follower: UserId, followee: UserId, at: Instan
   if followee == follower then Left(DomainError.CannotFollowYourself)
   else if isFollowing(follows, follower, followee) then Left(DomainError.AlreadyFollowing)
   else Right(Follow(follower, followee, at))
+
+def unfollow(follows: List[Follow], follower: UserId, followee: UserId): List[Follow] =
+  follows.filterNot(f => f.followee == followee && f.follower == follower)
